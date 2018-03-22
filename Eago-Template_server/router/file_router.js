@@ -9,5 +9,7 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 router.get('/template_list', jsonParser, file_control.template_list)
 router.get('/template_read', jsonParser, file_control.template_read)
+router.get('/deletedir', jsonParser, file_control.deletedir)
+router.post('/revise_view', jsonParser, file_control.revise_view)
 
 module.exports = router
