@@ -52,9 +52,14 @@
           <el-upload
             class="upload-demo"
             drag
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :file-list="fileList3"
+            action="/api/file/uploadlogo"
+            name="img"
+            :data="{
+              name: this.template.name,
+              type: 'logo'
+            }"
+            :on-success="img_success"
+            :headers="headers"
             list-type="picture">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
@@ -70,16 +75,50 @@
           <el-upload
             class="upload-demo"
             drag
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :file-list="fileList3"
+            action="/api/file/uploadlogo"
+            name="img"
+            :data="{
+              name: this.template.name,
+              type: 'banner'
+            }"
+            :on-success="img_success"
+            :headers="headers"
             list-type="picture">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
             <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
         </el-collapse-item>
-        <el-collapse-item title="正则全局替换" name="4">
+        <el-collapse-item title="正则替换图片" name="4">
+          <el-alert
+            title="使用正则表达式全局匹配图片路径，实现替换，上传图片之前请先输入原网页中的图片src。"
+            type="info"
+            :closable="false">
+          </el-alert>
+          <el-input
+            placeholder="请输入原网页中图片路径"
+            v-model="imgurl_regex"
+            clearable>
+          </el-input>
+          <el-upload v-if="this.imgurl_regex"
+            class="upload-demo"
+            drag
+            action="/api/file/uploadlogo"
+            name="img"
+            :data="{
+              name: this.template.name,
+              imgurl_regex: this.imgurl_regex,
+              type: 'regex'
+            }"
+            :headers="headers"
+            :on-success="img_success"
+            list-type="picture">
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+          </el-upload>
+        </el-collapse-item>
+        <el-collapse-item title="正则全局替换" name="5">
           <el-alert
             title="输入页面要替换的内容，可以是文字、数字、代码，修改代码内容请慎重"
             type="info"
@@ -120,17 +159,13 @@ export default {
   name: 'edit',
   data () {
     return {
-      fileList3: [{
-        name: 'food.jpeg',
-        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-        status: 'finished'
-      }, {
-        name: 'food2.jpeg',
-        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-        status: 'finished'
-      }],
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'enctype': 'multipart/form-data'
+      },
       activeName: '1',
       template_url: '',
+      imgurl_regex: '',
       template: {
         name: '',
         type: '',
@@ -168,6 +203,9 @@ export default {
           this.$router.push({path: '/'})
         }
       })
+    },
+    img_success () {
+      this.$refs.iframe.contentWindow.location.reload(true)
     }
   }
 }
@@ -214,5 +252,12 @@ export default {
     width: 400px;
     height: 750px;
     background: rgba(0,0,0,0.3);
+  }
+  .edit-container button{
+    margin-top: 20px;
+    width: 70%;
+  }
+  .upload-demo{
+    padding-top: 20px;
   }
 </style>

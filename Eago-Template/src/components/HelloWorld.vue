@@ -6,12 +6,12 @@
     <h1>Template List</h1>
     <div class="card-container">
       <el-carousel :interval="4000" type="card" height="700px">
-        <el-carousel-item v-for="item in this.template_list" :key="item">
-          <h3>{{item}}</h3>
+        <el-carousel-item v-for="item in this.template_list" :key="item.filename">
+          <h3>{{item.filename}}</h3>
           <div class="views_box">
-            <iframe src="http://demo.eago.world/Iphone8" frameborder="0"></iframe>
+            <iframe :src="item.fileurl"  frameborder="0"></iframe>
           </div>
-          <el-button type="primary" @click="read_file(item)">创建模板</el-button>
+          <el-button type="primary" @click="read_file(item.filename)">创建模板</el-button>
         </el-carousel-item>
       </el-carousel>
     </div>
@@ -42,13 +42,12 @@ export default {
     read_file (filename) {
       this.$http.get('/api/file/template_read?filename=' + filename).then((response) => {
         if (response.data.status === 0) {
-          this.template_url = response.data.data.url
           this.$router.push({
             name: 'edit',
             path: '/edit',
             query: {
               filename: filename,
-              url: this.template_url
+              url: response.data.data.url
             }
           })
         }

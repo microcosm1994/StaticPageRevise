@@ -13,7 +13,13 @@ exports.template_list = (req, res) => {
     fs.readdir(path.join(template_url), (err, files) => {
         if (err) throw err
         if (files) {
-            result.data = files
+            result.data = []
+            for (let i = 0; i < files.length; i++) {
+                let template = {}
+                template.filename = files[i]
+                template.fileurl = 'http://demo.eago.world/template/' + files[i]
+                result.data.push(template)
+            }
             res.json(result)
         } else {
             result.status = 1
@@ -104,6 +110,61 @@ exports.deletedir = (req, res) => {
     res.json(result)
 }
 
+exports.uploadlogo = (req, res) => {
+    let result = {
+        status: 0,
+        message: '图片上传成功'
+    }
+    let imgurl = path.join(views_url, req.body.name, 'img')
+    if (fs.existsSync(imgurl)) {
+        let readable = fs.createReadStream(path.join('/usr/local/server/uploads/', req.file.filename))//创建读取流
+        let writable = fs.createWriteStream(path.join(imgurl, req.file.originalname))//创建写入流
+        readable.pipe(writable)
+    } else {
+        mkdir(imgurl)
+        let readable = fs.createReadStream(path.join('/usr/local/server/uploads/', req.file.filename))//创建读取流
+        let writable = fs.createWriteStream(path.join(imgurl, req.file.originalname))//创建写入流
+        readable.pipe(writable)
+    }
+    if (fs.existsSync(path.join(imgurl, req.file.originalname))){
+        async.auto({
+            func1: function (callback) {
+                fs.readFile(path.join(views_url, req.body.name, 'index.html'), 'utf8', function (err, file) {
+                    if (err) throw err
+                    if (file) {
+                        callback(null, file)
+                    } else {
+                        result.status = 1
+                        result.message = '没有获取到模板内容'
+                        res.json(result)
+                    }
+                })
+            },
+            func2: ['func1', function (results, callback) {
+                const $ = cheerio.load(results.func1.toString())
+                if (req.body.type === 'logo') $('.logo>img').attr('src', './img/' + req.file.originalname)
+                if (req.body.type === 'banner') $('.banner>img').attr('src', './img/' + req.file.originalname)
+                if (req.body.type === 'regex') {
+                    $('img[src ="' + req.body.imgurl_regex + '" ]').attr('src', './img/' + req.file.originalname)
+                }
+                callback(null, $.html())
+            }],
+            func3: ['func2', function (results, callback) {
+                fs.writeFile(path.join(views_url, req.body.name, 'index.html'), results.func2, 'utf8', function (err, data) {
+                    if (err) throw err
+                    callback(null)
+                })
+            }]
+        }, function (err, results) {
+            if (err) throw err
+            res.json(result)
+        })
+    } else {
+        result.status = 1
+        result.message = '操作失败,请稍后再试'
+        res.json(result)
+    }
+}
 
 /**
  * 复制文件夹
