@@ -110,7 +110,7 @@ exports.deletedir = (req, res) => {
     res.json(result)
 }
 
-exports.uploadlogo = (req, res) => {
+exports.uploadimg = (req, res) => {
     let result = {
         status: 0,
         message: '图片上传成功'
@@ -164,6 +164,42 @@ exports.uploadlogo = (req, res) => {
         result.message = '操作失败,请稍后再试'
         res.json(result)
     }
+}
+
+exports.revise_text = (req, res) =>{
+    let result = {
+        status: 0,
+        message: '文字修改成功'
+    }
+    async.auto({
+        func1: function (callback) {
+            fs.readFile(path.join(views_url, req.body.name, 'index.html'), 'utf8', function (err, file) {
+                if (err) throw err
+                if (file) {
+                    callback(null, file)
+                } else {
+                    result.status = 1
+                    result.message = '没有获取到模板内容'
+                    res.json(result)
+                }
+            })
+        },
+        func2: ['func1', function (results, callback) {
+            let regexp = new RegExp(req.body.text_before)
+            let html = results.func1.toString()
+            html = html.replace(regexp, req.body.text_after)
+            callback(null, html)
+        }],
+        func3: ['func2', function (results, callback) {
+            fs.writeFile(path.join(views_url, req.body.name, 'index.html'), results.func2, 'utf8', function (err, data) {
+                if (err) throw err
+                callback(null)
+            })
+        }]
+    }, function (err, results) {
+        if (err) throw err
+        res.json(result)
+    })
 }
 
 /**

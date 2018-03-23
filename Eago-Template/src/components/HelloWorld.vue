@@ -64,6 +64,7 @@ export default {
     width: 100%;
     height: 100%;
     text-align: center;
+    padding-bottom: 100px;
     overflow: hidden;
   }
   h1{

@@ -52,7 +52,7 @@
           <el-upload
             class="upload-demo"
             drag
-            action="/api/file/uploadlogo"
+            action="/api/file/uploadimg"
             name="img"
             :data="{
               name: this.template.name,
@@ -75,7 +75,7 @@
           <el-upload
             class="upload-demo"
             drag
-            action="/api/file/uploadlogo"
+            action="/api/file/uploadimg"
             name="img"
             :data="{
               name: this.template.name,
@@ -103,7 +103,7 @@
           <el-upload v-if="this.imgurl_regex"
             class="upload-demo"
             drag
-            action="/api/file/uploadlogo"
+            action="/api/file/uploadimg"
             name="img"
             :data="{
               name: this.template.name,
@@ -118,14 +118,15 @@
             <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
         </el-collapse-item>
-        <el-collapse-item title="正则全局替换" name="5">
+        <el-collapse-item title="正则全局替换文字" name="5">
           <el-alert
-            title="输入页面要替换的内容，可以是文字、数字、代码，修改代码内容请慎重"
+            title="输入页面要替换的内容，可以是文字、数字、代码，修改代码内容请慎重。"
             type="info"
             :closable="false">
           </el-alert>
           <el-input
             placeholder="请填写要替换的内容"
+            v-model="regexp_text.text_before"
             clearable>
           </el-input>
           <el-alert
@@ -135,6 +136,7 @@
           </el-alert>
           <el-input
             placeholder="请输入新的内容"
+            v-model="regexp_text.text_after"
             clearable>
           </el-input>
           <el-alert
@@ -142,7 +144,7 @@
             type="info"
             :closable="false">
           </el-alert>
-          <el-button type="primary">提交</el-button>
+          <el-button type="primary" @click="revise_text">提交</el-button>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -174,6 +176,10 @@ export default {
           url: '',
           btn: ''
         }
+      },
+      regexp_text: {
+        text_before: '',
+        text_after: ''
       }
     }
   },
@@ -206,6 +212,15 @@ export default {
     },
     img_success () {
       this.$refs.iframe.contentWindow.location.reload(true)
+    },
+    revise_text () {
+      let data = this.regexp_text
+      data.name = this.template.name
+      this.$http.post('/api/file/revise_text', data).then((response) => {
+        if (response.data.status === 0) {
+          this.img_success()
+        }
+      })
     }
   }
 }
@@ -216,7 +231,6 @@ export default {
     height: 100%;
     padding: 0;
     margin: 0;
-    background: #f5f5f5;
   }
   .edit{
     width: 100%;
