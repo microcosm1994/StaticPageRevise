@@ -147,6 +147,9 @@ exports.uploadimg = (req, res) => {
                 if (req.body.type === 'regex') {
                     $('img[src ="' + req.body.imgurl_regex + '" ]').attr('src', './img/' + req.file.originalname)
                 }
+                if (req.body.type === 'video') {
+                    $('video').attr('src', './img/' + req.file.originalname)
+                }
                 callback(null, $.html())
             }],
             func3: ['func2', function (results, callback) {

@@ -89,7 +89,42 @@
             <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
         </el-collapse-item>
-        <el-collapse-item title="正则替换图片" name="4">
+        <el-collapse-item title="视频替换" name="4">
+          <el-alert
+            title="仅适用于页面只有一个视频需要替换，为空则不替换。"
+            type="info"
+            :closable="false">
+          </el-alert>
+          <el-upload
+            class="avatar-uploader"
+            style="padding-top: 30px;"
+            action="/api/file/uploadimg"
+            list-type="picture"
+            name="img"
+            :data="{
+              name: this.template.name,
+              type: 'video'
+            }"
+            :file-list="videoList"
+            :headers="headers"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :on-progress="progress"
+            :before-upload="beforeAvatarUpload">
+            <video
+              v-if="this.videoUrl"
+              :src="this.videoUrl"
+              class="avatar"
+              controls="controls" ></video>
+            <i class="el-icon-plus avatar-uploader-icon"
+               v-if="!this.videoUrl"
+               v-loading="this.loading"
+               element-loading-text="拼命上传中"
+               element-loading-spinner="el-icon-loading"
+               element-loading-background="rgba(0, 0, 0, 0.8)"></i>
+          </el-upload>
+        </el-collapse-item>
+        <el-collapse-item title="正则替换图片" name="5">
           <el-alert
             title="使用正则表达式全局匹配图片路径，实现替换，上传图片之前请先输入原网页中的图片src。"
             type="info"
@@ -118,7 +153,7 @@
             <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
           </el-upload>
         </el-collapse-item>
-        <el-collapse-item title="正则全局替换文字" name="5">
+        <el-collapse-item title="正则全局替换文字" name="6">
           <el-alert
             title="输入页面要替换的内容，可以是文字、数字、代码，修改代码内容请慎重。"
             type="info"
@@ -165,6 +200,8 @@ export default {
         'Access-Control-Allow-Origin': '*',
         'enctype': 'multipart/form-data'
       },
+      loading: false,
+      videoUrl: '',
       activeName: '1',
       template_url: '',
       imgurl_regex: '',
@@ -221,6 +258,26 @@ export default {
           this.img_success()
         }
       })
+    },
+    handleAvatarSuccess (res, file) {
+      this.videoUrl = URL.createObjectURL(file.raw)
+      this.loading = false
+      this.img_success()
+    },
+    beforeAvatarUpload (file) {
+      const isJPG = file.type === 'video/mp4'
+      const isLt2M = file.size / 1024 / 1024 < 20
+      if (!isJPG) {
+        this.$message.error('上传视频只能是 mp4 格式!')
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 20MB!')
+      }
+      return isJPG && isLt2M
+    },
+    progress () {
+      this.videoUrl = ''
+      this.loading = true
     }
   }
 }
@@ -273,5 +330,38 @@ export default {
   }
   .upload-demo{
     padding-top: 20px;
+  }
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px !important;
+    text-align: center;
+  }
+  .avatar {
+    width: 100%;
+    height: 220px;
+    display: block;
+  }
+  .el-loading-spinner{
+    top: 0 !important;
+    margin-top: 0 !important;
+  }
+  .el-loading-spinner .el-loading-text {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 </style>
